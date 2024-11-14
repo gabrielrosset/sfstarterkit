@@ -4,6 +4,7 @@
   - [Dependencies](#dependencies)
   - [First install](#first-install)
   - [Accessing services](#accessing-services)
+  - [Add a new endpoint](#add-a-new-endpoint)
   - [Docker compose cheatsheet](#docker-compose-cheatsheet)
   - [Recommendations](#recommendations)
   - [Notes](#notes)
@@ -62,6 +63,17 @@ To access MailHog, just go to the port `82` of your project.
 To access Composer, Node or NPM, you must enter the PHP container: `docker compose exec php bash`. You will then be able to do your Composer/Node/NPM commands.  
 
 Be careful, the IP address of the database is the name of the container. The address to indicate in the configuration files of your app is therefore: `mysql`.  
+
+## Add a new endpoint
+
+Just use the command below:
+
+```sh
+docker compose exec php bash -c "cd sfstarterkit && symfony console make:controller"
+```
+
+Then create for example a controller named: `HelloController`.
+That's all you have now access to your new endpoint: `http://localhost/hello` (or `http://sfstarterkit.local/hello`).
 
 ## Docker compose cheatsheet
 

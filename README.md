@@ -6,8 +6,14 @@
   - [Accessing services](#accessing-services)
   - [Add a new endpoint](#add-a-new-endpoint)
   - [Docker compose cheatsheet](#docker-compose-cheatsheet)
+  - [Upgrades](#upgrades)
+    - [Symfony](#symfony)
+    - [PHP](#php)
   - [Recommendations](#recommendations)
   - [Notes](#notes)
+    - [Use a prebuilt Docker image](#use-a-prebuilt-docker-image)
+    - [Nginx](#nginx)
+    - [Files location](#files-location)
 
 ## Dependencies
 
@@ -36,15 +42,6 @@ Once this is done, you can run the containers: `docker compose up -d`.
 If your port `80` is in use just change nginx port into `docker-compose.yml` (line 25).
 
 At the first launch after building the containers, wait a few seconds for MySQL to launch properly.  
-
-This stater kit goes with Symfony 7.1.  
-If you want to install another Symfony version, just do `rm -rf sfstarterkit` then change it using the command below:
-
-```sh
-docker compose exec php symfony new sfstarterkit --version="7.1.*" --webapp
-```
-
-Now you can find a folder called `sfstarterkit`, and Symfony is inside. Just move the files from this folder to the boilerplate base and delete the `sfstarterkit` folder because it is now empty. Make sure to not replace the .env file, you have to merge it to keep the contents of the 2 .env files.  
 
 If you set the database address in the `.env` file. So you have to replace it also in `sfstarterkit/.env`:
 `DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${DATABASE_NAME}"`
@@ -91,15 +88,47 @@ That's all you have now access to your new endpoint: `http://localhost/hello` (o
   - Open a console in the php-fpm container: `docker compose exec php bash`
   - Open the Symfony console: `docker compose exec php bin/console`
 
+## Upgrades
+
+### Symfony
+
+This stater kit goes with Symfony 7.1.  
+If you want to install another Symfony version, just do `rm -rf sfstarterkit` then change the `7.1.*` into the command below:
+
+```sh
+docker compose exec php symfony new sfstarterkit --version="7.1.*" --webapp
+```
+
+Run the command, now you can find a folder called `sfstarterkit`, and your Symfony version is inside.  
+
+### PHP
+
+To upgrade PHP, just change the `FROM` instruction into `.docker/php/Dockerfile`.
+Just be careful about:
+
+- `php-ini-overrides.ini` volume path into `docker-compose.yml`
+- requirements from your `${PROJECT_NAME}/composer.json`.
+- updating your libraries with `docker compose exec php composer update`
+
 ## Recommendations
 
-It's hard to avoid file permission issues when fiddling about with containers due to the fact that, from your OS point of view, any files created within the container are owned by the process that runs the docker engine (this is usually root). Different OS will also have different problems, for instance you can run stuff in containers using `docker exec -it -u $(id -u):$(id -g) CONTAINER_NAME COMMAND` to force your current user ID into the process, but this will only work if your host OS is Linux, not mac. Follow a couple of simple rules and save yourself a world of hurt.
+It's hard to avoid file permission issues when fiddling about with containers due to the fact that, from your OS point of view, any files created within the container are owned by the process that runs the docker engine (this is usually root). Different OS will also have different problems, for instance you can run stuff in containers using `docker exec -it -u $(id -u):$(id -g) CONTAINER_NAME COMMAND` to force your current user ID into the process, but this will only work if your host OS is Linux, not mac. Follow a couple of simple rules and save yourself a world of hurt.  
 
-- Run composer outside of the php container, as doing so would install all your dependencies owned by `root` within your vendor folder.
-- Run commands (ie Symfony's console, or Laravel's artisan) straight inside of your container. You can easily open a shell as described above and do your thing from there.
+- Run composer outside of the php container, as doing so would install all your dependencies owned by `root` within your vendor folder
+- Run commands (ie Symfony's console) straight inside of your container. You can easily open a shell as described above and do your thing from there
 
 ## Notes
 
+### Use a prebuilt Docker image
+
+In case you do not want to build your PHP image locally using the `.docker/php/Dockerfile`, just do a `git checkout dockerhub`.  
+This branch use a remote image from Docker Hub: `gabrielrossetgravito/docker-starter-php:8.2`.  
+After running `docker compose up -d` just install dependencies with `docker compose exec php bash -c "cd sfstarterkit && composer update"`.
+
+### Nginx
+
 Ensure the webserver config on `docker\nginx.conf` is correct for your project. phpdocker.io will have customised this file according to the application type you chose on the generator, for instance `web/app|app_dev.php` on a Symfony project, or `public/index.php` on generic apps.
 
-Note: you may place the files elsewhere in your project. Make sure you modify the locations for the php-fpm dockerfile, the php.ini overrides and nginx config on `docker compose.yml` if you do so.
+### Files location
+
+You may place the files elsewhere in your project. Make sure you modify the locations for the php-fpm dockerfile, the php.ini overrides and nginx config on `docker compose.yml` if you do so.  

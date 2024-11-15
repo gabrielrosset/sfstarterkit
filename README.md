@@ -49,7 +49,8 @@ Once this is done, you can run the containers: `docker compose up -d`.
 - Install dependencies by running: `docker compose exec php bash -c "cd sfstarterkit && composer install"`
 - Wait a few seconds for MySQL to launch properly
 
-The project is now available if you go to the URL `localhost`! (if not refer to the `Troubleshooting` section below)  
+The project is now available if you go to the URL `localhost`!  
+_(if not refer to the `Troubleshooting` section below)_
 
 ### Change localhost to a custom URL
 
